@@ -79,7 +79,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
           if (user.email) {
             localStorage.setItem("userEmail", user.email);
 
-            await createUser(user);
+            await createUser(user );
           }
         }
       } catch (error) {
