@@ -3,7 +3,7 @@ import {
   Users,
   Reports,
   Rewards,
-  CollectedWastes,
+  CollectedWaste,
   Notifications,
   Transactions,
 } from "./schema";
@@ -44,7 +44,7 @@ export async function createReport(
   amount: string,
   imageUrl?: string,
   type?: string,
-  verificationResult?: any
+  verificationResult?: string
 ) {
   try {
     const [report] = await db
@@ -116,7 +116,6 @@ export async function getOrCreateReward(userId: number) {
           name: "Default Reward",
           collectionInfo: "Default Collection Info",
           points: 0,
-          level: 1,
           isAvailable: true,
         })
         .returning()
@@ -154,7 +153,7 @@ export async function createCollectedWaste(
 ) {
   try {
     const [collectedWaste] = await db
-      .insert(CollectedWastes)
+      .insert(CollectedWaste)
       .values({
         reportId,
         collectorId,
@@ -169,12 +168,12 @@ export async function createCollectedWaste(
   }
 }
 
-export async function getCollectedWastesByCollector(collectorId: number) {
+export async function getCollectedWasteByCollector(collectorId: number) {
   try {
     return await db
       .select()
-      .from(CollectedWastes)
-      .where(eq(CollectedWastes.collectorId, collectorId))
+      .from(CollectedWaste)
+      .where(eq(CollectedWaste.collectorId, collectorId))
       .execute();
   } catch (error) {
     console.error("Error fetching collected wastes:", error);
@@ -328,12 +327,11 @@ export async function saveReward(userId: number, amount: number) {
 
 export async function saveCollectedWaste(
   reportId: number,
-  collectorId: number,
-  verificationResult: any
+  collectorId: number
 ) {
   try {
     const [collectedWaste] = await db
-      .insert(CollectedWastes)
+      .insert(CollectedWaste)
       .values({
         reportId,
         collectorId,
@@ -355,7 +353,7 @@ export async function updateTaskStatus(
   collectorId?: number
 ) {
   try {
-    const updateData: any = { status: newStatus };
+    const updateData: Record<string, string | number> = { status: newStatus };
     if (collectorId !== undefined) {
       updateData.collectorId = collectorId;
     }
@@ -433,7 +431,7 @@ export async function getAvailableRewards(userId: number) {
 
     // Get user's total points
     const userTransactions = await getRewardTransactions(userId);
-    const userPoints = userTransactions.reduce((total, transaction) => {
+    const userPoints = userTransactions?.reduce((total, transaction) => {
       return transaction.type.startsWith("earned")
         ? total + transaction.amount
         : total - transaction.amount;
@@ -497,7 +495,7 @@ export async function createTransaction(
 
 export async function redeemReward(userId: number, rewardId: number) {
   try {
-    const userReward = (await getOrCreateReward(userId)) as any;
+    const userReward = (await getOrCreateReward(userId));
 
     if (rewardId === 0) {
       // Redeem all points
@@ -515,8 +513,8 @@ export async function redeemReward(userId: number, rewardId: number) {
       await createTransaction(
         userId,
         "redeemed",
-        userReward.points,
-        `Redeemed all points: ${userReward.points}`
+        userReward?.points ?? 0,
+        `Redeemed all points: ${userReward?.points ?? 0}`
       );
 
       return updatedReward;
