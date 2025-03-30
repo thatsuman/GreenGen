@@ -33,7 +33,13 @@ export default function RootLayout({
           if (user) {
             const availableRewards = await getAvailableRewards(user.id);
             console.log("availableRewards from layout", availableRewards);
-            setTotalEarnings(availableRewards);
+
+            // Calculate the total cost of rewards
+            const totalCost = availableRewards.reduce(
+              (sum, reward) => sum + reward.cost,
+              0
+            );
+            setTotalEarnings(totalCost); // Set the total cost
           }
         }
       } catch (error) {
