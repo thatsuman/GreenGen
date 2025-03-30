@@ -26,7 +26,7 @@ import { Badge } from "./ui/badge";
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { createUser } from "../lib/api";
+import { createUser, getUserByEmail, getUserBalance } from "../lib/api"; // Add missing imports
 import { get } from "http";
 
 // import web3auth client id from env variable
@@ -80,11 +80,11 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
 
           if (user.email) {
             localStorage.setItem("userEmail", user.email);
-            try{
-                
-              await createUser(user.email, user.name || 'Anonymous User');
-            }catch(error){
-              console.error('Error creating user', error);
+            try {
+              await createUser(user.email, user.name || "Anonymous User");
+            } catch (error) {
+              console.error("Error creating user", error);
+            }
           }
         }
       } catch (error) {
@@ -92,18 +92,101 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
       } finally {
         setLoading(false);
       }
+    };
+    init();
+  }, []);
 
-    }
-    init()
-  },[]);
-  useEffect(()=>{
+  useEffect(() => {
     const fetchNotifications = async () => {
       if (userInfo && userInfo.email) {
         const user = await getUserByEmail(userInfo.email);
-        
+        // Add logic to fetch notifications for the user
       }
-
     };
     fetchNotifications();
-  })
+
+    const notificationInterval = setInterval(fetchNotifications, 3000); 
+    return () => clearInterval(notificationInterval);
+  }, [userInfo]);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (userInfo && userInfo.email) {
+        const user = await getUserByEmail(userInfo.email);
+        if (user) {
+          const userBalance = await getUserBalance(user.id); 
+          setBalance(userBalance); 
+      }
+    };
+    fetchBalance(); 
+
+    const handleBalanceUpdate = (event: CustomEvent) => {
+      setBalance(event.detail);
+    };
+    window.addEventListener("balanceUpdate", handleBalanceUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener("balanceUpdate", handleBalanceUpdate as EventListener);
+    };
+  }, [userInfo]);
+}
+
+const login = async () => {
+  if (!web3auth) {
+    console.error("Web3Auth not initialized");
+    return;
+  }
+  try {
+    const web3authProvider = await web3auth.connect();
+    setProvider(web3authProvider);
+    setLoggedIn(true);
+    const user = await web3auth.getUserInfo();
+    setUserInfo(user);
+    if(user.email){
+      localStorage.setItem("userEmail", user.email);
+      try {
+        await createUser(user.email, user.name || "Anonymous User");
+      } catch (error) {
+        console.error("Error creating user", error);
+      }
+    }
+  } 
+  const logout = async () => {
+    if(!web3auth) {
+      console.error("Web3Auth not initialized");
+      return;
+    }
+    try{
+      await web3auth.logout();
+      setProvider(null);
+      setLoggedIn(false);
+      setUserInfo(null);
+      localStorage.removeItem("userEmail");
+
+    }catch(error) {
+      console.error("Error logging out", error);
+};
+const getUserBalance = async () => {
+  if(web3auth.connected){
+    const user = await web3auth.getUserInfo()
+    setUserInfo(user);
+
+    if(user.email){
+      localStorage.setItem('userEmail', user.email)
+      try{
+        await createUser(user.email, user.name || "Anonymous User")
+      }
+    }
+  }
+  }
+  const handleNotificationClick = async(notificationId: number) => {
+    await markNoficationAsRead(notificationId);
+};
+  if (loading){
+    return <div>Loading web3 auth....</div>;
+  }
+  return (turn
+    
+  )
+
 }
