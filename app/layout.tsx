@@ -6,8 +6,11 @@ import "./globals.css";
 
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
+import "leaflet/dist/leaflet.css";
 
 import { Toaster } from "react-hot-toast";
+
+import { getAvailableRewards, getUserByEmail } from "@/utils/db/actions";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,11 +31,15 @@ export default function RootLayout({
           console.log("user from layout", user);
 
           if (user) {
-            const availableRewards = (await getAvailableRewards(
-              user.id
-            )) as any;
+            const availableRewards = await getAvailableRewards(user.id);
             console.log("availableRewards from layout", availableRewards);
-            setTotalEarnings(availableRewards);
+
+            // Calculate the total cost of rewards
+            const totalCost = availableRewards.reduce(
+              (sum, reward) => sum + reward.cost,
+              0
+            );
+            setTotalEarnings(totalCost); // Set the total cost
           }
         }
       } catch (error) {

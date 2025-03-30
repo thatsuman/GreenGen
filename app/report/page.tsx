@@ -16,8 +16,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 // Google API keys
-const geminiApiKey = process.env.GEMINI_API_KEY as any;
-const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY as any;
+const geminiApiKey = process.env.GEMINI_API_KEY as string | undefined;
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY as string | undefined;
 
 // Libraries required for Google Maps API
 const libraries: Libraries = ["places"];
@@ -74,7 +74,7 @@ export default function ReportPage() {
   // Load Google Maps API
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: googleMapsApiKey,
+    googleMapsApiKey: googleMapsApiKey || "",
     libraries: libraries,
   });
 
@@ -210,7 +210,13 @@ export default function ReportPage() {
         newReport.amount,
         preview || undefined,
         verificationResult ? JSON.stringify(verificationResult) : undefined
-      )) as any;
+      )) as {
+        id: number;
+        location: string;
+        wasteType: string;
+        amount: string;
+        createdAt: Date;
+      };
 
       const formattedReport = {
         id: report.id,
@@ -249,19 +255,11 @@ export default function ReportPage() {
         }
         setUser(user);
 
-        const recentReports = await getRecentReports();
-        const formattedReports = recentReports.map(
-          (report: {
-            id: number;
-            location: string;
-            wasteType: string;
-            amount: string;
-            createdAt: Date;
-          }) => ({
-            ...report,
-            createdAt: report.createdAt.toISOString().split("T")[0],
-          })
-        );
+        const recentReports = (await getRecentReports());
+        const formattedReports = recentReports.map((report) => ({
+          ...report,
+          createdAt: report.createdAt.toISOString().split("T")[0],
+        }));
         setReports(formattedReports);
       } else {
         router.push("/login");
