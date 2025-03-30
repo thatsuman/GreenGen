@@ -26,6 +26,8 @@ import { Badge } from "./ui/badge";
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+import { createUser } from "../lib/api";
+import { get } from "http";
 
 // import web3auth client id from env variable
 const clientId = process.env.WEB3_AUTH_CLIENT_ID;
@@ -78,13 +80,30 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
 
           if (user.email) {
             localStorage.setItem("userEmail", user.email);
-
-            await createUser(user );
+            try{
+                
+              await createUser(user.email, user.name || 'Anonymous User');
+            }catch(error){
+              console.error('Error creating user', error);
           }
         }
       } catch (error) {
-        //handle error
+        console.error("Error initializing Web3Auth", error);
+      } finally {
+        setLoading(false);
       }
+
+    }
+    init()
+  },[]);
+  useEffect(()=>{
+    const fetchNotifications = async () => {
+      if (userInfo && userInfo.email) {
+        const user = await getUserByEmail(userInfo.email);
+        
+      }
+
     };
-  });
+    fetchNotifications();
+  })
 }

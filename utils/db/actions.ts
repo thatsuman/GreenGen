@@ -32,7 +32,7 @@ export async function getUnreadNotifications(userId: number) {
     }
 }
 
-export async function getUserBalance(userId: number) {
+export async function getUserBalance(userId: number): Promise<number | null> {
     const transactions = await getRewardTransactions(userId);
     const totalPoints = transactions.reduce((acc, transaction) => {
     
