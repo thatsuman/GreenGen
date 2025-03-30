@@ -3,7 +3,7 @@ import {
   Users,
   Reports,
   Rewards,
-  CollectedWaste,
+  CollectedWastes,
   Notifications,
   Transactions,
 } from "./schema";
@@ -153,7 +153,7 @@ export async function createCollectedWaste(
 ) {
   try {
     const [collectedWaste] = await db
-      .insert(CollectedWaste)
+      .insert(CollectedWastes)
       .values({
         reportId,
         collectorId,
@@ -172,8 +172,8 @@ export async function getCollectedWasteByCollector(collectorId: number) {
   try {
     return await db
       .select()
-      .from(CollectedWaste)
-      .where(eq(CollectedWaste.collectorId, collectorId))
+      .from(CollectedWastes)
+      .where(eq(CollectedWastes.collectorId, collectorId))
       .execute();
   } catch (error) {
     console.error("Error fetching collected wastes:", error);
@@ -304,7 +304,6 @@ export async function saveReward(userId: number, amount: number) {
         name: "Waste Collection Reward",
         collectionInfo: "Points earned from waste collection",
         points: amount,
-        level: 1,
         isAvailable: true,
       })
       .returning()
@@ -331,7 +330,7 @@ export async function saveCollectedWaste(
 ) {
   try {
     const [collectedWaste] = await db
-      .insert(CollectedWaste)
+      .insert(CollectedWastes)
       .values({
         reportId,
         collectorId,
@@ -353,7 +352,10 @@ export async function updateTaskStatus(
   collectorId?: number
 ) {
   try {
-    const updateData: Record<string, string | number> = { status: newStatus };
+    const updateData: { status: string; collectorId?: number } = {
+      status: newStatus,
+    };
+
     if (collectorId !== undefined) {
       updateData.collectorId = collectorId;
     }
@@ -495,7 +497,7 @@ export async function createTransaction(
 
 export async function redeemReward(userId: number, rewardId: number) {
   try {
-    const userReward = (await getOrCreateReward(userId));
+    const userReward = await getOrCreateReward(userId);
 
     if (rewardId === 0) {
       // Redeem all points
