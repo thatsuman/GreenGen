@@ -1,2 +1,9 @@
 # GreenGen
-AI powered Waste Management Platform
+
+AI powered decentralised Waste Management Platform
+
+## Installation
+
+`yarn `
+
+`yarn run dev`
