@@ -34,7 +34,8 @@ import {
   getUserBalance,
 } from "@/utils/db/actions";
 
-const clientId = process.env.WEB3AUTH_CLIENT_ID;
+const clientId =
+  "BCxf5K9IVCPvt_5wXsMTG5B5PEqQaDj--47da_Gu5irCiTyLpp-7cFRXurslzoMoAzeQjUgRgEVyoICvzqfibP4";
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
@@ -240,7 +241,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
             <Leaf className="h-6 w-6 md:h-8 md:w-8 text-green-500 mr-1 md:mr-2" />
             <div className="flex flex-col">
               <span className="font-bold text-base md:text-lg text-gray-800">
-                Zero2Hero
+                GreenGen
               </span>
               <span className="text-[8px] md:text-[10px] text-gray-500 -mt-1">
                 ETHOnline24
