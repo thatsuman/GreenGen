@@ -25,7 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useMediaQuery } from "@/app/hooks/useMediaQuery";
 import {
   createUser,
   getUnreadNotifications,
@@ -34,8 +34,7 @@ import {
   getUserBalance,
 } from "@/utils/db/actions";
 
-const clientId =
-  "BCxf5K9IVCPvt_5wXsMTG5B5PEqQaDj--47da_Gu5irCiTyLpp-7cFRXurslzoMoAzeQjUgRgEVyoICvzqfibP4";
+const clientId = process.env.WEB3_AUTH_CLIENT_ID || "";
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
@@ -67,7 +66,12 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  interface UserInfo {
+    email: string;
+    name: string;
+  }
+
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const pathname = usePathname();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -138,14 +142,20 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     fetchUserBalance();
 
     // Add an event listener for balance updates
-    const handleBalanceUpdate = (event: CustomEvent<{ detail: number }>) => {
+    const handleBalanceUpdate = (event: CustomEvent) => {
       setBalance(event.detail);
     };
 
-    window.addEventListener("balanceUpdated", handleBalanceUpdate);
+    window.addEventListener(
+      "balanceUpdated",
+      handleBalanceUpdate as EventListener
+    );
 
     return () => {
-      window.removeEventListener("balanceUpdated", handleBalanceUpdate);
+      window.removeEventListener(
+        "balanceUpdated",
+        handleBalanceUpdate as EventListener
+      );
     };
   }, [userInfo]);
 
@@ -207,16 +217,12 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   };
 
   const handleNotificationClick = async (notificationId: number) => {
-    try {
-      await markNotificationAsRead(notificationId);
-      setNotifications((prevNotifications) =>
-        prevNotifications.filter(
-          (notification) => notification.id !== notificationId
-        )
-      );
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
+    await markNotificationAsRead(notificationId);
+    setNotifications((prevNotifications) =>
+      prevNotifications.filter(
+        (notification) => notification.id !== notificationId
+      )
+    );
   };
 
   if (loading) {
@@ -239,7 +245,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
             <Leaf className="h-6 w-6 md:h-8 md:w-8 text-green-500 mr-1 md:mr-2" />
             <div className="flex flex-col">
               <span className="font-bold text-base md:text-lg text-gray-800">
-                GreenGen
+                Zero2Hero
               </span>
               <span className="text-[8px] md:text-[10px] text-gray-500 -mt-1">
                 ETHOnline24
@@ -324,7 +330,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={getUserInfo}>
-                  {userInfo?.name || "Anonymous User"}
+                  {userInfo ? userInfo.name : "Fetch User Info"}
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Link href="/settings">Profile</Link>

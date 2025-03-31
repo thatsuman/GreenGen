@@ -16,6 +16,8 @@ const eslintConfig = [
       // Disable the base rule to avoid conflicts with TypeScript
       "no-unused-vars": "off",
 
+      "@typescript-eslint/no-require-imports": "error",
+
       // Configure the TypeScript-specific rule
       "@typescript-eslint/no-unused-vars": [
         "off", // Change "off" to "warn" or "error" if you want to enable it

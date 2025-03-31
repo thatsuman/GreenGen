@@ -44,7 +44,7 @@ export async function createReport(
   amount: string,
   imageUrl?: string,
   type?: string,
-  verificationResult?: string
+  verificationResult?: any
 ) {
   try {
     const [report] = await db
@@ -116,6 +116,7 @@ export async function getOrCreateReward(userId: number) {
           name: "Default Reward",
           collectionInfo: "Default Collection Info",
           points: 0,
+          level: 1,
           isAvailable: true,
         })
         .returning()
@@ -168,7 +169,7 @@ export async function createCollectedWaste(
   }
 }
 
-export async function getCollectedWasteByCollector(collectorId: number) {
+export async function getCollectedWastesByCollector(collectorId: number) {
   try {
     return await db
       .select()
@@ -304,6 +305,7 @@ export async function saveReward(userId: number, amount: number) {
         name: "Waste Collection Reward",
         collectionInfo: "Points earned from waste collection",
         points: amount,
+        level: 1,
         isAvailable: true,
       })
       .returning()
@@ -326,7 +328,8 @@ export async function saveReward(userId: number, amount: number) {
 
 export async function saveCollectedWaste(
   reportId: number,
-  collectorId: number
+  collectorId: number,
+  verificationResult: any
 ) {
   try {
     const [collectedWaste] = await db
@@ -355,7 +358,6 @@ export async function updateTaskStatus(
     const updateData: { status: string; collectorId?: number } = {
       status: newStatus,
     };
-
     if (collectorId !== undefined) {
       updateData.collectorId = collectorId;
     }
@@ -433,7 +435,7 @@ export async function getAvailableRewards(userId: number) {
 
     // Get user's total points
     const userTransactions = await getRewardTransactions(userId);
-    const userPoints = userTransactions?.reduce((total, transaction) => {
+    const userPoints = userTransactions.reduce((total, transaction) => {
       return transaction.type.startsWith("earned")
         ? total + transaction.amount
         : total - transaction.amount;
@@ -497,7 +499,7 @@ export async function createTransaction(
 
 export async function redeemReward(userId: number, rewardId: number) {
   try {
-    const userReward = await getOrCreateReward(userId);
+    const userReward = (await getOrCreateReward(userId)) as any;
 
     if (rewardId === 0) {
       // Redeem all points
@@ -515,8 +517,8 @@ export async function redeemReward(userId: number, rewardId: number) {
       await createTransaction(
         userId,
         "redeemed",
-        userReward?.points ?? 0,
-        `Redeemed all points: ${userReward?.points ?? 0}`
+        userReward.points,
+        `Redeemed all points: ${userReward.points}`
       );
 
       return updatedReward;

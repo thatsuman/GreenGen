@@ -6,7 +6,7 @@ import "./globals.css";
 
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
-import "leaflet/dist/leaflet.css";
+// import "leaflet/dist/leaflet.css";
 
 import { Toaster } from "react-hot-toast";
 
