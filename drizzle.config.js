@@ -3,7 +3,8 @@ export default {
   schema: "./src/utils/db/schema.ts",
   out: "./drizzle",
   dbCredentials: {
-    url: process.env.DATABASE_URL,
-    connectionString: process.env.DATABASE_URL,
+    url: "postgresql://GreenGenDB_owner:npg_XEAS6F0zcHeT@ep-green-union-a1u9pzha-pooler.ap-southeast-1.aws.neon.tech/GreenGenDB?sslmode=require",
+    connectionString:
+      "postgresql://GreenGenDB_owner:npg_XEAS6F0zcHeT@ep-green-union-a1u9pzha-pooler.ap-southeast-1.aws.neon.tech/GreenGenDB?sslmode=require",
   },
 };
